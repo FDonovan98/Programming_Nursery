@@ -1,0 +1,16 @@
+#!/bin/bash
+# A script to automatically upload files to github
+
+cd
+cd Documents/Uni/
+git commit -a -m "Daily Upload `$commitDate`"
+git push https://HDonovan96:aa1dfc5600d17be03b019d911a0ffc867aab9eb6@github.com/HDonovan96/Uni.git --all
+
+wait
+
+cd
+cd Documents/Programming/
+git commit -a -m "Daily Upload `$commitDate`"
+git push https://Username:Password@github.com/HDonovan96/Programming.git --all
+
+wait
