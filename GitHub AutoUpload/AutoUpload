@@ -2,15 +2,8 @@
 # A script to automatically upload files to github
 
 cd
-cd Documents/Uni/
+cd Filepath
 git commit -a -m "Daily Upload `$commitDate`"
-git push https://Username:Password@github.com/HDonovan96/Uni.git --all
-
-wait
-
-cd
-cd Documents/Programming/
-git commit -a -m "Daily Upload `$commitDate`"
-git push https://Username:Password@github.com/HDonovan96/Programming.git --all
+git push https://Username:Password@github.com/Profile/Repository.git --all
 
 wait
