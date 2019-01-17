@@ -1,0 +1,23 @@
+Best Total X Distance 671.709
+Best Lift 4.39496
+Best Mass 0.20999
+Best Wing Alpha 4
+Best Fuselage Length 0.9
+Best Wing Span 0.1
+Best Wing Chord 0.2
+Best Tail Span 0.1
+Best Tail Chord 0.7
+Best Take Off Distance 1.88346
+Best Take Off Time 0.28125
+Best Cruise Angle 55.2672
+Best Glide Angle 3.92814
+Best Wing X 0.1
+Best Tail X 0.55
+Best Passenger X 0
+Best Jet X 0
+Best Jet Y -0.1
+Best Front Gear Length 0
+Best Rear Gear Length 0
+Best Take Off Moment 1.4531
+Best Take Off Angle nan
+Time Taken For Program To Run 8235 seconds 
