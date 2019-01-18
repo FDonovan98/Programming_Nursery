@@ -3,7 +3,7 @@
 
 cd
 cd Filepath
-git commit -a -m "Daily Upload" -m "`$commitDate`"
+git commit -a -m "Bulk Upload"
 git push https://Username:Password@github.com/Profile/Repository.git --all
 
 wait
