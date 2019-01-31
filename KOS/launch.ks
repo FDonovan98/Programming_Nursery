@@ -14,69 +14,53 @@ function Launch {
 }
 
 function AtmoBreach {
+    parameter H.
     lock TargetPitch to 88.963 - 1.03287 * alt:radar^0.409511.
     lock steering to heading(90,TargetPitch).
     local OldThrust is ship:availablethrust.
-    until alt:apoapsis > 80000 {
+    until alt:apoapsis > H {
         if OldThrust > ship:availablethrust + 10 {
             SafeStage.
             wait until stage:ready.
             set OldThrust to ship:availablethrust.
         }
     }
+
     print("Atmospheric escape achieved").
+
+    until alt:radar > ship:orbit:body:atm:height {
+        if alt:apoapsis > H {
+            set throttle to 0.
+        } else if alt:apoapsis < H {
+            set throttle to 1.
+        }
+    }
+
+    print("Atmospheric escape maintained").
 }
 
 function Circularise {
     wait until alt:radar > ship:orbit:body:atm:height.
-    local i is -1000.
-    local Besti is -1000.
+    local i is 0.
+    local Besti is 0.
     set Circle to node(time:seconds + eta:apoapsis, 0, 0, i).
     add Circle.
     set BestE to Circle:orbit:eccentricity.
     remove Circle.
-    from {set i to 0.} until i > 1000 step {set i to i + 1000.} do {
-        set Circle to node(time:seconds + eta:apoapsis, 0, 0, i). 
-        add Circle.
-        set NewE to Circle:orbit:eccentricity.
-        remove Circle.
-        if NewE < BestE {
-            set BestE to NewE.
-            set Besti to i.
-        }
-    }
+    set StepSize to 2560.
 
-    from {set i to Besti - 500.} until i > Besti + 500 step {set i to i +100.} do {
-        set Circle to node(time:seconds + eta:apoapsis, 0, 0, i). 
-        add Circle.
-        set NewE to Circle:orbit:eccentricity.
-        remove Circle.
-        if NewE < BestE {
-            set BestE to NewE.
-            set Besti to i.
+    until StepSize < 5 {
+        from {set i to Besti - StepSize.} until i > Besti + StepSize step {set i to i + StepSize.} do {
+            set Circle to node(time:seconds + eta:apoapsis, 0, 0, i). 
+            add Circle.
+            set NewE to Circle:orbit:eccentricity.
+            remove Circle.
+            if NewE < BestE {
+                set BestE to NewE.
+                set Besti to i.
+            }
         }
-    }
-
-    from {set i to Besti - 250.} until i > Besti + 250 step {set i to i +50.} do {
-        set Circle to node(time:seconds + eta:apoapsis, 0, 0, i). 
-        add Circle.
-        set NewE to Circle:orbit:eccentricity.
-        remove Circle.
-        if NewE < BestE {
-            set BestE to NewE.
-            set Besti to i.
-        }
-    }
-
-    from {set i to Besti - 125.} until i > Besti + 125 step {set i to i +5.} do {
-        set Circle to node(time:seconds + eta:apoapsis, 0, 0, i). 
-        add Circle.
-        set NewE to Circle:orbit:eccentricity.
-        remove Circle.
-        if NewE < BestE {
-            set BestE to NewE.
-            set Besti to i.
-        }
+        set StepSize to StepSize * 0.5.
     }
 
     RunManuevre(time:seconds + eta:apoapsis, 0, 0, Besti).
@@ -119,9 +103,9 @@ function RunManuevre {
         wait until time:seconds > (mnv:eta - 10).
         lock steering to mnv:deltav.
 
-        wait until time:seconds > spark.
+        wait until time:seconds > spark - 0.5.
         lock throttle to 1.
-        wait until time:seconds > cutoff.
+        wait until time:seconds > cutoff - 0.5.
         lock throttle to 0.
         unlock steering.
         unlock throttle.
@@ -132,10 +116,89 @@ function RunManuevre {
 
 }
 
-if alt:radar < 1000 {
-
+function GroundToOrbit {
+    parameter H is 0.
+    if H = 0 {
+        set H to ship:orbit:body:atm:height + 10000.
+    }
+    print("Entering circular orbit of " + H + " meters").
     Launch.
-    AtmoBreach.
+    AtmoBreach(H).
     set throttle to 0.
     Circularise.
 }
+
+function OrbitToOrbit {
+    parameter Target.
+
+    Intercept(Target).
+    Circularise.
+}
+
+function Intercept {
+    parameter Target.
+
+    set i to 0.
+    set Besti to 0.
+    set t to 0.
+    set Bestt to 0.
+    set Besth to 100000000.
+    set StepSize to 256.
+    set InterceptMNV to node(TIME:SECONDS + t, 0, 0, i).
+    add InterceptMNV.
+
+    local mini to 0.
+    local midt to 0.
+    local decreasing to true.
+
+    set InterceptMNV to node(TIME:SECONDS + eta:apoapsis, 0, 0, i).
+    add InterceptMNV.
+
+    until interceptmnv:orbit:apoapsis > target:orbit:periapsis - Target:soiradius {
+        remove interceptmnv.
+        set i to i + 10.
+        set InterceptMNV to node(TIME:SECONDS + t, 0, 0, i).
+        add interceptmnv.
+    }
+
+    set Mini to i.
+
+    until InterceptMNV:orbit:transition = "ENCOUNTER" and interceptmnv:orbit:nextpatch:body = target {
+        remove interceptmnv.
+        set t to t + 10.
+        set InterceptMNV to node(TIME:SECONDS + t, 0, 0, mini).
+        add interceptmnv.
+    }
+    set midt to t.
+    remove interceptmnv.
+
+    from {set i to mini.} until decreasing = false step {set i to i + 5.} do {
+        set decreasing to false.
+        from {set t to midt - 0.125 * ship:orbit:period.} until t > midt + 0.125 * ship:orbit:period step {set t to t + 1.} do {
+            set InterceptMNV to node(TIME:SECONDS + t, 0, 0, i).
+            add InterceptMNV.
+            if InterceptMNV:orbit:transition = "ENCOUNTER" and interceptmnv:orbit:nextpatch:body = target {
+                if InterceptMNV:orbit:nextpatch:periapsis < Besth and InterceptMNV:orbit:nextpatch:periapsis > Target:atm:height + 10000 {
+                    set decreasing to true.
+                    set Besth to InterceptMNV:orbit:nextpatch:periapsis.
+                    set Besti to i.
+                    set Bestt to t.
+                }
+            } 
+            remove InterceptMNV.
+        } 
+    }
+
+    if Besti = 0 and Bestt = 0 {
+        print("No encounter possible").
+    } else {
+        set InterceptMNV to node(TIME:SECONDS + Bestt, 0, 0, Besti).
+        add InterceptMNV.
+    }
+
+}
+
+
+//GroundToOrbit().
+Intercept(Mun).
+//OrbitToOrbit(Mun).
