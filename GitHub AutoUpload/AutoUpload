@@ -3,8 +3,10 @@
 # To set up:
 # 1. Change filepath to the directory containing the .git directory
 # 2. Replace replace username and password, recommended to use an Oauth key for the password
+# 3. After the @ symbol the command should read the same as the url of the depositary you are uploading to
 
 cd
 cd Filepath
+git add .
 git commit -a -m "Bulk Upload"
 git push https://Username:Password@github.com/Profile/Repository.git --all
