@@ -1,5 +1,3 @@
-x = [1,2,3];
-y = [2;3;4];
-
-prod = x*y;
-disp(prod)
+prompt = 'What is the original value? ';
+x = input(prompt)
+y = x*10
