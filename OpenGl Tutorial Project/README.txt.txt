@@ -1,1 +1,0 @@
-Tutorial source - https://learnopengl.com/
