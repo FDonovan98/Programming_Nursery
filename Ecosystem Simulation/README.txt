@@ -1,3 +1,5 @@
+**THIS PROJECT HAS BEEN SUSPENDED DUE TO TIME AND BECAUSE I WANT TO FOCUS ON LEARNING OPENGL**
+
 A project to set up an ecosystem simulation
 
 Create each species as an object:
