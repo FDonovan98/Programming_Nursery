@@ -1,3 +1,5 @@
+**THIS PROJECT HAS BEEN PUT ON HOLD DUE TO TIME, MONEY, AND IMPRACTICALLITY**
+
 This is a long term project with the end goal bein that I can order a mug of tea on an app, have a program control some hardware, probably using arduinos, that will make this mug of tea, and then recieve a notification on the app when it is ready.
 
 So you know that project you did in Year 7 science on "How to make a mug of tea?" and you had to fill it out so make you think things through step by step? I'm basically doing that because I'm original and drink too much tea.
