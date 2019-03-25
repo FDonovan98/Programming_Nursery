@@ -1,0 +1,28 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "g++ -g -I C:\\Users\\Harry\\Documents\\Programming\\OpenGL\\Requirements\\Include -L C:\\Users\\Harry\\Documents\\Programming\\OpenGL\\Requirements\\Libs\\** Project1.cpp -mwindows -o Project1 glad.c -lglfw3dll -lglfw3",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run",
+            "type": "shell",
+            "command": "./Project1",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}
