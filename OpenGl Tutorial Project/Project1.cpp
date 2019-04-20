@@ -6,6 +6,9 @@
 
 #include <shaders.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 using namespace std;
 
 //resizes the window if the user changes its size
@@ -22,7 +25,7 @@ void ProcessInput(GLFWwindow *window) {
 //the main program
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
-    /* #region Initilization */
+    /* #region initilization */
 
     //initializes GLFW and GLAD
     glfwInit();
@@ -49,38 +52,52 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     /* #endregion */
 
+    /* #region setTexture */
+
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // set texture wrapping and filtering for the currently bound texture
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    //load and gen texture
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        cout << "Failed to load texture/n";
+    }
+    stbi_image_free(data);
+
+    /* #endregion */
+
     /* #region pointsToRender */
 
     //defines points to be rendered
-    float Triangle1[] = {
-        //position      //colour
-         0.5,  0.5, 0.0,  1.0, 0.0, 0.0,
-         0.5, -0.5, 0.0,  0.0, 1.0, 0.0,
-        -0.5, -0.5, 0.0,  0.0, 0.0, 1.0
+    float vertices[] = {
+    //positions           //colors            //texture coords
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     };
 
-    float Triangle2[] = {
-        0.4, 0.5, 0.0,
-        -0.6, 0.5, 0.0,
-        -0.6, -0.5, 0.0,
-        -0.8, 0.5, 0.0
-    };
-
-    //defines order vertices are connected in
-    unsigned int Indices1[] = {
-        0, 1, 2, 
-    };
-
-    unsigned int Indices2[] = {
-        0, 1, 2, 
+    unsigned int indicies[] = {
+        0, 1, 3,
         1, 2, 3
     };
 
     //generate VAO, VBO, EBO
-    unsigned int VAO[2], VBO[2], EBO[2];
-    glGenVertexArrays(2, VAO);
-    glGenBuffers(2, VBO);
-    glGenBuffers(2, EBO);
+    unsigned int VAO[1], VBO[1], EBO[1];
+    glGenVertexArrays(1, VAO);
+    glGenBuffers(1, VBO);
+    glGenBuffers(1, EBO);
 
     //bind first set of VAO, VBO, EBO
     glBindVertexArray(VAO[0]);
@@ -88,33 +105,23 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
 
     //store data in buffers
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle1), Triangle1, GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices1), Indices1, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
 
     //position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     //color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    //bind second set of VAO, VBO, EBO
-    glBindVertexArray(VAO[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
-
-    //store data in buffers
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle2), Triangle2, GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices2), Indices2, GL_STATIC_DRAW);
-
-    //configure opengl to interpret the vertices array corectly
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    //texture attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     /* #endregion */
-
-    Shader strobeShader("Dependencies/Shaders/strobeShader.vs", "Dependencies/Shaders/strobeShader.fs");
 
     Shader gradientShader("Dependencies/Shaders/gradientShader.vs", "Dependencies/Shaders/gradientShader.fs");
 
@@ -127,24 +134,13 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         glClearColor(0.2, 0.3, 0.3, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        //set ourColor to change with time
-        float timeValue = glfwGetTime();
-        float strobe = sin(timeValue) / 2.0f + 0.5f;
-
         //drawing settings
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         gradientShader.use();
 
         //draws in shapes
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO[0]);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-
-        //drawing settings
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        strobeShader.use();
-        strobeShader.setFloat("color", strobe);
-
-        glBindVertexArray(VAO[1]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         //moves the image in the buffer window to the display window
