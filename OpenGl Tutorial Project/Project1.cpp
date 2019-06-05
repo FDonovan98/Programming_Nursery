@@ -16,10 +16,24 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)  {
     glViewport(0, 0, width, height);
 }
 
+//Initialise variables needed for key presses
+float mixStrength = 0.5;
+
 //interprets key presses
-void ProcessInput(GLFWwindow *window) {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        if (mixStrength < 1.0f) {
+            mixStrength += 0.0001;
+        }
+    }    
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        if (mixStrength > 0.0f) {
+            mixStrength -= 0.0001;
+        }
+    }  
 }
 
 //the main program
@@ -85,10 +99,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     glBindTexture(GL_TEXTURE_2D, face);
 
     //set texture wrapping and filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     //load and gen face texture
     data = stbi_load("Dependencies/Textures/awesomeface.png", &width, &height, &nrChannels, 0);
@@ -109,8 +123,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     //positions           //colors            //texture coords
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,  0.0f, 0.0f,   // bottom left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,  0.0f, 1.0f    // top left 
     };
 
     unsigned int indicies[] = {
@@ -157,7 +171,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     //render loop
     while(!glfwWindowShouldClose(window)) {
         //reads any key inputs
-        ProcessInput(window);
+        processInput(window);
 
         //sets the colour of clear pixels
         glClearColor(0.2, 0.3, 0.3, 1.0);
@@ -166,6 +180,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         //drawing settings
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         gradientShader.use();
+
+        //Sets mixStrength
+        gradientShader.setFloat("mixStrength", mixStrength);
 
         //draws in shapes
         glBindVertexArray(VAO[0]);
