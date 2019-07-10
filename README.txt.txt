@@ -1,0 +1,1 @@
+This repository is a temporary store for projects that aren't developed enough to have their own dedicated repository. Once a project becomes suitably developed it will be removed from here.
